@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phantom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary:    #0b0b10;
+  --bg-secondary:  #111118;
+  --bg-card:       #15151d;
+  --bg-input:      #1a1a24;
+  --bg-hover:      #1f1f2b;
+  --text-primary:   #e8e8f0;
+  --text-secondary: #8888a0;
+  --text-muted:     #555568;
+  --accent:         #9966ff;
+  --accent-dim:     #9966ff22;
+  --accent-glow:    #9966ff44;
+  --accent-hover:   #aa77ff;
+  --red:     #ff4466;
+  --red-dim: #ff446633;
+  --green:   #22dd88;
+  --green-dim: #22dd8833;
+  --gold:    #ffcc00;
+  --purple:  #aa66ff;
+  --pink:    #ff66aa;
+  --blue:    #4488ff;
+  --grey:    #666680;
+  --orange:  #ff8c00;
+  --radius:    10px;
+  --radius-sm: 6px;
+  --font-main: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-main);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+
+/* LAYOUT */
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 56px; background: var(--bg-secondary);
+  border-bottom: 1px solid #ffffff0a; position: sticky; top: 0; z-index: 100;
+}
+.nav-logo {
+  font-size: 20px; font-weight: 800; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--accent); cursor: pointer;
+}
+.nav-links { display: flex; gap: 4px; align-items: center; }
+.nav-link {
+  padding: 6px 14px; border-radius: var(--radius-sm); font-size: 14px;
+  font-weight: 500; color: var(--text-secondary); cursor: pointer;
+  transition: all .15s; border: none; background: none; font-family: var(--font-main);
+}
+.nav-link:hover { color: var(--text-primary); background: var(--bg-hover); }
+.nav-link.active { color: var(--accent); background: var(--accent-dim); }
+.nav-balance {
+  font-family: var(--font-mono); font-size: 13px; color: var(--green);
+  padding: 4px 10px; background: var(--green-dim); border-radius: var(--radius-sm); margin-right: 4px;
+}
+.main { flex: 1; display: flex; justify-content: center; padding: 32px 16px; }
+.page { width: 100%; max-width: 580px; display: none; animation: fadeIn .25s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* COMPONENTS */
+.card { background: var(--bg-card); border: 1px solid #ffffff08; border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
+.card-title { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
+.form-input {
+  width: 100%; padding: 10px 12px; background: var(--bg-input);
+  border: 1px solid #ffffff10; border-radius: var(--radius-sm);
+  color: var(--text-primary); font-family: var(--font-main); font-size: 14px;
+  outline: none; transition: border-color .15s;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-input::placeholder { color: var(--text-muted); }
+.form-input-mono { font-family: var(--font-mono); font-size: 11px; }
+select.form-input {
+  cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238888a0'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 20px; border-radius: var(--radius-sm); font-family: var(--font-main);
+  font-size: 14px; font-weight: 600; border: none; cursor: pointer;
+  transition: all .15s; width: 100%; position: relative;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); box-shadow: 0 0 20px var(--accent-glow); }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover { filter: brightness(1.15); }
+.btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid #ffffff15; }
+.btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
+.btn:disabled { opacity: .4; cursor: not-allowed; filter: none !important; box-shadow: none !important; }
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn.loading { pointer-events: none; color: transparent !important; }
+.btn.loading::after {
+  content: ''; position: absolute; width: 18px; height: 18px;
+  border: 2px solid #fff4; border-top-color: #fff; border-radius: 50%;
+  animation: spin .5s linear infinite;
+}
+.btn-primary.loading::after { border-color: #fff4; border-top-color: #fff; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn-row { display: flex; gap: 8px; margin-top: 8px; }
+.btn-row .btn { flex: 1; }
+
+/* ALERT */
+.alert { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 14px; display: none; }
+.alert.error   { display: block; background: var(--red-dim); color: var(--red); border: 1px solid #ff446622; }
+.alert.success { display: block; background: var(--green-dim); color: var(--green); border: 1px solid #22dd8822; }
+
+/* INFO ROW */
+.info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #ffffff06; font-size: 14px; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: var(--text-secondary); }
+.info-value { font-family: var(--font-mono); font-size: 13px; }
+.info-value.copyable { cursor: pointer; }
+.info-value.copyable:hover { color: var(--accent); }
+
+/* TABS */
+.tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #ffffff10; }
+.tab-btn {
+  flex: 1; padding: 10px; background: none; border: none;
+  border-bottom: 2px solid transparent; color: var(--text-secondary);
+  font-family: var(--font-main); font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all .15s;
+}
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-btn:hover  { color: var(--text-primary); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* PROVABLY FAIR COLLAPSIBLE */
+.pf-toggle {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-muted);
+  cursor: pointer; margin-top: 14px; user-select: none;
+}
+.pf-toggle:hover { color: var(--text-secondary); }
+.pf-toggle .arrow { transition: transform .2s; font-size: 10px; }
+.pf-toggle.open .arrow { transform: rotate(90deg); }
+.pf-panel {
+  margin-top: 8px; padding: 10px; background: var(--bg-input);
+  border-radius: var(--radius-sm); font-family: var(--font-mono);
+  font-size: 11px; color: var(--text-muted); word-break: break-all;
+  display: none;
+}
+.pf-panel.open { display: block; }
+.pf-panel .pf-row { margin-bottom: 6px; }
+.pf-panel .pf-row:last-child { margin-bottom: 0; }
+.pf-panel .pf-key { color: var(--text-secondary); }
+
+/* UPGRADER - CIRCULAR */
+.upgrader-layout {
+  display: flex; align-items: center; justify-content: center;
+  gap: 20px; padding: 16px 0;
+}
+.upgrader-bet-side {
+  text-align: center; flex-shrink: 0;
+}
+.upgrader-bet-label {
+  font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
+}
+.upgrader-bet-value {
+  font-size: 26px; font-weight: 700; font-family: var(--font-mono);
+}
+.upgrader-arrow {
+  font-size: 24px; color: var(--text-muted); flex-shrink: 0;
+}
+.upgrader-ring-wrap {
+  position: relative; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.upgrader-ring-center {
+  position: absolute; text-align: center;
+}
+.upgrader-ring-label {
+  font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;
+}
+.upgrader-ring-value {
+  font-size: 22px; font-weight: 700; font-family: var(--font-mono);
+}
+.upgrader-result { text-align: center; padding: 14px 0; font-size: 26px; font-weight: 700; }
+.upgrader-result.won  { color: var(--orange); }
+.upgrader-result.lost { color: var(--text-muted); }
+
+/* CASES */
+.case-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.case-card {
+  background: var(--bg-input); border: 2px solid transparent;
+  border-radius: var(--radius); padding: 14px 16px; cursor: pointer;
+  transition: all .2s; display: flex; align-items: center; justify-content: space-between;
+}
+.case-card:hover { border-color: var(--accent); }
+.case-card.selected { border-color: var(--accent); background: var(--accent-dim); }
+.case-name { font-weight: 600; font-size: 15px; }
+.case-cost { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
+.case-drops { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.case-drop-chip {
+  display: flex; align-items: center; gap: 3px;
+  padding: 2px 6px; border-radius: 4px;
+  font-size: 11px; font-family: var(--font-mono); background: #ffffff08;
+}
+.case-drop-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* ROULETTE */
+.roulette-container {
+  position: relative; overflow: hidden; height: 80px;
+  background: var(--bg-primary); border-radius: var(--radius);
+  border: 1px solid #ffffff0a; margin: 16px 0;
+}
+.roulette-marker {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 3px; height: 100%; background: var(--accent); z-index: 3;
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+.roulette-marker::before, .roulette-marker::after {
+  content: ''; position: absolute; left: 50%; transform: translateX(-50%);
+  width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent;
+}
+.roulette-marker::before { top: 0; border-top: 8px solid var(--accent); }
+.roulette-marker::after  { bottom: 0; border-bottom: 8px solid var(--accent); }
+.roulette-strip {
+  display: flex; position: absolute; top: 0; left: 0;
+  height: 100%; will-change: transform;
+}
+.roulette-item {
+  width: 80px; height: 80px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-weight: 600; font-size: 14px;
+  border-right: 1px solid #ffffff08;
+}
+.case-result { text-align: center; padding: 14px 0; }
+.case-result-value { font-size: 32px; font-weight: 700; font-family: var(--font-mono); }
+
+/* COLORS */
+.color-grey { color: var(--grey); } .color-blue { color: var(--blue); }
+.color-purple { color: var(--purple); } .color-pink { color: var(--pink); }
+.color-red { color: var(--red); } .color-gold { color: var(--gold); }
+.bg-grey { background: #66668020; } .bg-blue { background: #4488ff18; }
+.bg-purple { background: #aa66ff18; } .bg-pink { background: #ff66aa18; }
+.bg-red { background: #ff446618; } .bg-gold { background: #ffcc0018; }
+.dot-grey { background: var(--grey); } .dot-blue { background: var(--blue); }
+.dot-purple { background: var(--purple); } .dot-pink { background: var(--pink); }
+.dot-red { background: var(--red); } .dot-gold { background: var(--gold); }
+
+/* Color labels for cases */
+.clabel-grey { color: var(--grey); } .clabel-blue { color: var(--blue); }
+.clabel-purple { color: var(--purple); } .clabel-pink { color: var(--pink); }
+.clabel-red { color: var(--red); } .clabel-gold { color: var(--gold); }
+
+/* WITHDRAWALS */
+.withdrawal-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #ffffff06; font-size: 13px; }
+.withdrawal-status { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+.status-COMPLETED { background: var(--green-dim); color: var(--green); }
+.status-SUCCESS   { background: var(--green-dim); color: var(--green); }
+.status-PENDING   { background: #ffcc0033; color: var(--gold); }
+.status-FAILED    { background: var(--red-dim); color: var(--red); }
+
+/* HOME */
+.home-hero { text-align: center; padding: 40px 0 20px; }
+.home-hero h1 { font-size: 40px; font-weight: 800; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+.home-hero p { color: var(--text-secondary); font-size: 15px; }
+.home-games { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+.home-game-card {
+  background: var(--bg-card); border: 1px solid #ffffff08; border-radius: var(--radius);
+  padding: 20px; cursor: pointer; transition: all .2s;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.home-game-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.home-game-title { font-size: 18px; font-weight: 600; }
+.home-game-desc { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+.home-game-arrow { color: var(--accent); font-size: 20px; }
+
+/* UTILS */
+.page-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+.text-center { text-align: center; }
+.text-muted  { color: var(--text-secondary); font-size: 13px; }
+.mt-8  { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mb-12 { margin-bottom: 12px; }
+.hidden { display: none !important; }
+
+@media (max-width: 480px) {
+  .nav { padding: 0 12px; }
+  .nav-link { padding: 6px 8px; font-size: 12px; }
+  .main { padding: 16px 10px; }
+  .home-hero h1 { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="nav">
+    <div class="nav-logo" onclick="navigate('home')">PHANTOM</div>
+    <div class="nav-links" id="nav-links"></div>
+  </nav>
+  <main class="main">
+
+    <!-- AUTH -->
+    <div class="page" id="page-auth">
+      <div class="card">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchAuthTab('login')">Login</button>
+          <button class="tab-btn" onclick="switchAuthTab('register')">Register</button>
+        </div>
+        <div class="tab-content active" id="tab-login">
+          <div id="login-alert" class="alert"></div>
+          <div class="form-group"><label class="form-label">Username</label><input class="form-input" id="login-username" placeholder="username"></div>
+          <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="login-password" type="password" placeholder="password"></div>
+          <button class="btn btn-primary" id="btn-login" onclick="doLogin()">Login</button>
+        </div>
+        <div class="tab-content" id="tab-register">
+          <div id="register-alert" class="alert"></div>
+          <div class="form-group"><label class="form-label">Username <span class="text-muted">(4-20, a-z, 0-9, _)</span></label><input class="form-input" id="reg-username" placeholder="username"></div>
+          <div class="form-group"><label class="form-label">Display Name</label><input class="form-input" id="reg-displayname" placeholder="Display Name"></div>
+          <div class="form-group"><label class="form-label">Password <span class="text-muted">(8-40)</span></label><input class="form-input" id="reg-password1" type="password" placeholder="password"></div>
+          <div class="form-group"><label class="form-label">Confirm password</label><input class="form-input" id="reg-password2" type="password" placeholder="password"></div>
+          <button class="btn btn-primary" id="btn-register" onclick="doRegister()">Register</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div class="page" id="page-home">
+      <div class="home-hero"><h1>Phantom</h1><p>Provably fair games with USDT</p></div>
+      <div class="home-games">
+        <div class="home-game-card" onclick="navigate('upgrader')"><div><div class="home-game-title">Upgrader</div><div class="home-game-desc">Pick your odds, multiply your bet</div></div><div class="home-game-arrow">&rarr;</div></div>
+        <div class="home-game-card" onclick="navigate('cases')"><div><div class="home-game-title">Cases</div><div class="home-game-desc">Open cases with tiered drops</div></div><div class="home-game-arrow">&rarr;</div></div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="page" id="page-profile">
+      <h2 class="page-title">Profile</h2>
+      <div class="card"><div id="profile-info"></div></div>
+      <div class="card">
+        <div class="card-title">Change Display Name</div>
+        <div id="patch-alert" class="alert"></div>
+        <div class="form-group"><input class="form-input" id="patch-displayname" placeholder="New display name"></div>
+        <button class="btn btn-primary" id="btn-patch" onclick="doUpdateDisplayName()">Save</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Security</div>
+        <div id="secure-alert" class="alert"></div>
+        <div class="form-group"><label class="form-label">Current password *</label><input class="form-input" id="secure-current" type="password"></div>
+        <div class="form-group"><label class="form-label">New username</label><input class="form-input" id="secure-username" placeholder="leave empty to keep"></div>
+        <div class="form-group"><label class="form-label">New password</label><input class="form-input" id="secure-password" type="password" placeholder="leave empty to keep"></div>
+        <button class="btn btn-primary" id="btn-secure" onclick="doSecureUpdate()">Update</button>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--red)">Delete Account</div>
+        <div id="delete-alert" class="alert"></div>
+        <div class="form-group"><label class="form-label">Enter password to confirm</label><input class="form-input" id="delete-password" type="password"></div>
+        <button class="btn btn-danger" id="btn-delete" onclick="doDeleteAccount()">Delete account permanently</button>
+      </div>
+    </div>
+
+    <!-- WALLET -->
+    <div class="page" id="page-wallet">
+      <h2 class="page-title">Wallet</h2>
+      <div class="card">
+        <div id="wallet-info"></div>
+        <div id="deposit-alert" class="alert"></div>
+        <div class="form-group"><label class="form-label">Transaction ID</label><input class="form-input" id="deposit-txid" placeholder="Paste your transaction ID here"></div>
+        <button class="btn btn-ghost mt-12" id="btn-check-dep" onclick="doCheckDeposit()">Check deposit</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Withdraw USDT (TRC-20)</div>
+        <div id="withdraw-alert" class="alert"></div>
+        <div class="form-group"><label class="form-label">Amount <span class="text-muted">(min 10, fee 4 USDT)</span></label><input class="form-input" id="withdraw-value" type="number" placeholder="10" min="10"></div>
+        <div class="form-group"><label class="form-label">TRC-20 address</label><input class="form-input" id="withdraw-address" placeholder="T..."></div>
+        <button class="btn btn-primary" id="btn-withdraw" onclick="doWithdraw()">Withdraw</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Withdrawal History</div>
+        <div id="withdrawals-list" class="text-muted">Press check to refresh</div>
+        <button class="btn btn-ghost mt-12" id="btn-check-wd" onclick="doCheckWithdrawals()">Check</button>
+      </div>
+    </div>
+
+    <!-- UPGRADER -->
+    <div class="page" id="page-upgrader">
+      <h2 class="page-title">Upgrader</h2>
+      <div id="upgrader-init" class="card">
+        <div id="upgrader-init-alert" class="alert"></div>
+        <div class="form-group"><label class="form-label">Bet (USDT)</label><input class="form-input" id="upgrader-bet" type="number" min="1" placeholder="1"></div>
+        <div class="form-group"><label class="form-label">Win chance</label><select class="form-input" id="upgrader-percent"></select></div>
+        <div class="info-row mt-8"><span class="info-label">Multiplier</span><span class="info-value" id="upgrader-multiplier">&mdash;</span></div>
+        <div class="info-row"><span class="info-label">Potential win</span><span class="info-value" id="upgrader-possible">&mdash;</span></div>
+        <button class="btn btn-primary mt-16" id="btn-up-init" onclick="doUpgraderInit()">Start game</button>
+      </div>
+      <div id="upgrader-play" class="card hidden">
+        <!-- Bet → Ring with Win inside -->
+        <div class="upgrader-layout">
+          <div class="upgrader-bet-side">
+            <div class="upgrader-bet-label">Bet</div>
+            <div class="upgrader-bet-value" id="up-bet-display">—</div>
+          </div>
+          <div class="upgrader-arrow">→</div>
+          <div class="upgrader-ring-wrap">
+            <svg id="up-ring-svg" width="180" height="180" viewBox="0 0 180 180"></svg>
+            <div class="upgrader-ring-center">
+              <div class="upgrader-ring-label">Win</div>
+              <div class="upgrader-ring-value" id="up-win-display">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="text-center text-muted mb-12">Chance: <strong id="up-play-percent"></strong>%</div>
+        <div id="upgrader-result" class="upgrader-result hidden"></div>
+        <div class="btn-row" id="up-pre-buttons">
+          <button class="btn btn-primary" id="btn-up-run" onclick="doUpgraderRun()">Spin</button>
+          <button class="btn btn-ghost" onclick="doUpgraderCancel()">Cancel</button>
+        </div>
+        <div class="btn-row hidden" id="up-post-buttons">
+          <button class="btn btn-primary" onclick="doUpgraderPlayAgain()">Play again</button>
+          <button class="btn btn-ghost" onclick="navigate('home')">Back</button>
+        </div>
+        <div class="pf-toggle" onclick="togglePf('up-pf')">
+          <span class="arrow">&#9654;</span> Provably fair
+        </div>
+        <div class="pf-panel" id="up-pf">
+          <div class="pf-row"><span class="pf-key">Server hash: </span><span id="up-server-hash">&mdash;</span></div>
+          <div class="pf-row"><span class="pf-key">Server seed: </span><span id="up-server-seed">&mdash;</span></div>
+          <div class="pf-row" style="margin-top:8px">
+            <label class="form-label" style="margin-bottom:4px">Client seed (64 hex, editable)</label>
+            <input class="form-input form-input-mono" id="up-client-seed" style="font-size:10px">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CASES -->
+    <div class="page" id="page-cases">
+      <h2 class="page-title">Cases</h2>
+      <div id="cases-init">
+        <div id="cases-init-alert" class="alert"></div>
+        <div class="case-list" id="cases-list"></div>
+        <button class="btn btn-primary" id="btn-case-open" onclick="doCaseInit()" disabled>Select a case</button>
+      </div>
+      <div id="cases-play" class="card hidden">
+        <div class="text-center text-muted mb-12">Case: <strong id="case-play-name"></strong></div>
+        <div class="roulette-container" id="roulette-container">
+          <div class="roulette-marker"></div>
+          <div class="roulette-strip" id="roulette-strip"></div>
+        </div>
+        <div id="case-result" class="case-result hidden"></div>
+        <div class="btn-row" id="case-pre-buttons">
+          <button class="btn btn-primary" id="btn-case-run" onclick="doCaseRun()">Open</button>
+          <button class="btn btn-ghost" onclick="doCaseCancel()">Cancel</button>
+        </div>
+        <div class="btn-row hidden" id="case-post-buttons">
+          <button class="btn btn-primary" onclick="doCaseOpenSameAgain()">Open again</button>
+          <button class="btn btn-ghost" onclick="loadCasesSettings()">Back to cases</button>
+        </div>
+        <div class="pf-toggle" onclick="togglePf('case-pf')">
+          <span class="arrow">&#9654;</span> Provably fair
+        </div>
+        <div class="pf-panel" id="case-pf">
+          <div class="pf-row"><span class="pf-key">Server hash: </span><span id="case-server-hash">&mdash;</span></div>
+          <div class="pf-row"><span class="pf-key">Server seed: </span><span id="case-server-seed">&mdash;</span></div>
+          <div class="pf-row" style="margin-top:8px">
+            <label class="form-label" style="margin-bottom:4px">Client seed (64 hex, editable)</label>
+            <input class="form-input form-input-mono" id="case-client-seed" style="font-size:10px">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+var API_BASE = 'http://localhost:8080/api';
+var MIN_LOADING_MS = 1000;
+
+var state = {
+  token: localStorage.getItem('phantom_token'),
+  user: null, wallet: null,
+  upgraderSettings: null, casesSettings: null,
+  selectedCase: null, _rouletteItems: [],
+  _upBet: 0, _upWin: 0, _upPct: 0,
+};
+
+/* ================================================================
+   API
+   ================================================================ */
+async function api(method, path, body) {
+  var headers = { 'Content-Type': 'application/json' };
+  if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
+  var opts = { method: method, headers: headers };
+  if (body) opts.body = JSON.stringify(body);
+  var res = await fetch(API_BASE + path, opts);
+  if (res.status === 204) return null;
+  var data = await res.json();
+  if (!res.ok) {
+    if (res.status === 401) doLogout();
+    throw new Error(data.error || 'HTTP ' + res.status);
+  }
+  return data;
+}
+
+function generateClientSeed() {
+  var bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+/* ================================================================
+   BUTTON FEEDBACK — spinner shows for at least MIN_LOADING_MS
+   ================================================================ */
+async function withFeedback(btnId, fn) {
+  var btn = document.getElementById(btnId);
+  if (!btn) return fn();
+  btn.classList.add('loading');
+  var start = Date.now();
+  try {
+    var result = await fn();
+    var elapsed = Date.now() - start;
+    if (elapsed < MIN_LOADING_MS) {
+      await new Promise(function(r) { setTimeout(r, MIN_LOADING_MS - elapsed); });
+    }
+    btn.classList.remove('loading');
+    return result;
+  } catch (e) {
+    btn.classList.remove('loading');
+    throw e;
+  }
+}
+
+/* ================================================================
+   NAVIGATION
+   ================================================================ */
+function navigate(page) {
+  if (!state.token && page !== 'auth') page = 'auth';
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  var el = document.getElementById('page-' + page);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
+  var link = document.querySelector('.nav-link[data-page="' + page + '"]');
+  if (link) link.classList.add('active');
+  var loaders = { profile: loadProfile, wallet: loadWallet, upgrader: loadUpgraderSettings, cases: loadCasesSettings };
+  if (loaders[page]) loaders[page]();
+}
+
+function renderNav() {
+  var el = document.getElementById('nav-links');
+  if (!state.token) { el.innerHTML = ''; return; }
+  el.innerHTML =
+    '<span class="nav-balance" id="nav-balance">&mdash;</span>' +
+    '<button class="nav-link" data-page="home" onclick="navigate(\'home\')">Home</button>' +
+    '<button class="nav-link" data-page="wallet" onclick="navigate(\'wallet\')">Wallet</button>' +
+    '<button class="nav-link" data-page="upgrader" onclick="navigate(\'upgrader\')">Upgrader</button>' +
+    '<button class="nav-link" data-page="cases" onclick="navigate(\'cases\')">Cases</button>' +
+    '<button class="nav-link" data-page="profile" onclick="navigate(\'profile\')">Profile</button>' +
+    '<button class="nav-link" onclick="doLogout()">Logout</button>';
+}
+
+function updateNavBalance() {
+  var el = document.getElementById('nav-balance');
+  if (el && state.wallet) el.textContent = parseFloat(state.wallet.balance).toFixed(2) + ' USDT';
+}
+
+/* ================================================================
+   ALERTS & PF
+   ================================================================ */
+function showAlert(id, msg, type) { var el = document.getElementById(id); if (!el) return; el.textContent = msg; el.className = 'alert ' + (type || 'error'); }
+function clearAlert(id) { var el = document.getElementById(id); if (!el) return; el.className = 'alert'; el.textContent = ''; }
+function togglePf(id) { var p = document.getElementById(id); var t = p.previousElementSibling; p.classList.toggle('open'); t.classList.toggle('open'); }
+
+/* ================================================================
+   AUTH
+   ================================================================ */
+function switchAuthTab(tab) {
+  document.querySelectorAll('#page-auth .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('#page-auth .tab-content').forEach(function(c) { c.classList.remove('active'); });
+  var idx = tab === 'login' ? 0 : 1;
+  document.querySelectorAll('#page-auth .tab-btn')[idx].classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+async function doLogin() {
+  clearAlert('login-alert');
+  var u = document.getElementById('login-username').value.trim();
+  var p = document.getElementById('login-password').value;
+  if (!u || !p) return showAlert('login-alert', 'Fill in all fields');
+  try {
+    await withFeedback('btn-login', async function() {
+      var data = await api('POST', '/auth/login', { username: u, password: p });
+      state.token = data.token;
+      localStorage.setItem('phantom_token', data.token);
+      renderNav(); loadWallet(); navigate('home');
+    });
+  } catch (e) { showAlert('login-alert', e.message); }
+}
+
+async function doRegister() {
+  clearAlert('register-alert');
+  var u = document.getElementById('reg-username').value.trim();
+  var d = document.getElementById('reg-displayname').value.trim();
+  var p1 = document.getElementById('reg-password1').value;
+  var p2 = document.getElementById('reg-password2').value;
+  if (!u || !d || !p1 || !p2) return showAlert('register-alert', 'Fill in all fields');
+  try {
+    await withFeedback('btn-register', async function() {
+      await api('POST', '/auth/register', { username: u, displayName: d, password1: p1, password2: p2 });
+      showAlert('register-alert', 'Account created! You can log in now.', 'success');
+      setTimeout(function() { switchAuthTab('login'); }, 1200);
+    });
+  } catch (e) { showAlert('register-alert', e.message); }
+}
+
+function doLogout() {
+  state.token = null; state.user = null; state.wallet = null;
+  localStorage.removeItem('phantom_token');
+  renderNav(); navigate('auth');
+}
+
+/* ================================================================
+   PROFILE
+   ================================================================ */
+async function loadProfile() {
+  try {
+    state.user = await api('GET', '/users/me');
+    document.getElementById('profile-info').innerHTML =
+      '<div class="info-row"><span class="info-label">ID</span><span class="info-value">' + state.user.id + '</span></div>' +
+      '<div class="info-row"><span class="info-label">Username</span><span class="info-value">' + esc(state.user.username) + '</span></div>' +
+      '<div class="info-row"><span class="info-label">Display Name</span><span class="info-value">' + esc(state.user.displayName) + '</span></div>';
+  } catch (_) {}
+}
+async function doUpdateDisplayName() {
+  clearAlert('patch-alert');
+  var n = document.getElementById('patch-displayname').value.trim();
+  if (!n) return showAlert('patch-alert', 'Enter a new name');
+  try { await withFeedback('btn-patch', async function() { await api('PATCH', '/users/me', { displayName: n }); showAlert('patch-alert', 'Name updated', 'success'); loadProfile(); }); }
+  catch (e) { showAlert('patch-alert', e.message); }
+}
+async function doSecureUpdate() {
+  clearAlert('secure-alert');
+  var cp = document.getElementById('secure-current').value;
+  var un = document.getElementById('secure-username').value.trim() || undefined;
+  var pw = document.getElementById('secure-password').value || undefined;
+  if (!cp) return showAlert('secure-alert', 'Enter current password');
+  if (!un && !pw) return showAlert('secure-alert', 'Provide new username or password');
+  try { await withFeedback('btn-secure', async function() {
+    var b = { currentPassword: cp }; if (un) b.username = un; if (pw) b.password = pw;
+    await api('PATCH', '/users/me/secure', b); showAlert('secure-alert', 'Updated', 'success'); loadProfile();
+  }); } catch (e) { showAlert('secure-alert', e.message); }
+}
+async function doDeleteAccount() {
+  clearAlert('delete-alert');
+  var pw = document.getElementById('delete-password').value;
+  if (!pw) return showAlert('delete-alert', 'Enter password');
+  if (!confirm('Delete account permanently? This cannot be undone.')) return;
+  try { await withFeedback('btn-delete', async function() { await api('DELETE', '/users/me', { password: pw }); doLogout(); }); }
+  catch (e) { showAlert('delete-alert', e.message); }
+}
+
+/* ================================================================
+   WALLET
+   ================================================================ */
+async function loadWallet() { try { state.wallet = await api('GET', '/wallet'); renderWallet(); } catch (_) {} }
+function renderWallet() {
+  var w = state.wallet; if (!w) return;
+  document.getElementById('wallet-info').innerHTML =
+    '<div class="info-row"><span class="info-label">Balance</span><span class="info-value" style="color:var(--green);font-size:16px">' + parseFloat(w.balance).toFixed(2) + ' USDT</span></div>' +
+    '<div class="info-row"><span class="info-label">Total deposited</span><span class="info-value">' + parseFloat(w.depositsSum).toFixed(2) + ' USDT</span></div>' +
+    '<div class="info-row"><span class="info-label">Deposit address</span><span class="info-value copyable" title="Click to copy" onclick="copyText(\'' + w.depositAddress + '\')">' + truncAddr(w.depositAddress) + '</span></div>';
+  updateNavBalance();
+}
+async function doCheckDeposit() {
+  clearAlert('deposit-alert');
+  var txId = document.getElementById('deposit-txid').value.trim();
+  if (!txId) return showAlert('deposit-alert', 'Paste a transaction ID');
+  try { await withFeedback('btn-check-dep', async function() {
+    var data = await api('POST', '/wallet/check-deposit/' + txId);
+    state.wallet = data.wallet; renderWallet();
+    if (data.txStatus === 'SUCCESS') showAlert('deposit-alert', 'Deposit confirmed!', 'success');
+    else if (data.txStatus === 'PENDING') showAlert('deposit-alert', 'Transaction pending, try again later');
+    else showAlert('deposit-alert', 'Deposit failed');
+  }); } catch (e) { showAlert('deposit-alert', e.message); }
+}
+async function doWithdraw() {
+  clearAlert('withdraw-alert');
+  var v = document.getElementById('withdraw-value').value;
+  var a = document.getElementById('withdraw-address').value.trim();
+  if (!v || !a) return showAlert('withdraw-alert', 'Fill in all fields');
+  try { await withFeedback('btn-withdraw', async function() {
+    state.wallet = await api('POST', '/wallet/withdrawal/init', { value: parseFloat(v), address: a });
+    showAlert('withdraw-alert', 'Withdrawal initiated!', 'success'); renderWallet();
+  }); } catch (e) { showAlert('withdraw-alert', e.message); }
+}
+async function doCheckWithdrawals() {
+  try { await withFeedback('btn-check-wd', async function() {
+    var data = await api('POST', '/wallet/withdrawal/check');
+    state.wallet = data.wallet; renderWallet();
+    var list = document.getElementById('withdrawals-list');
+    if (!data.withdrawals || data.withdrawals.length === 0) { list.innerHTML = '<div class="text-muted">No withdrawals</div>'; return; }
+    list.innerHTML = data.withdrawals.map(function(w) {
+      return '<div class="withdrawal-item"><span>' + parseFloat(w.value).toFixed(2) + ' USDT</span><span class="withdrawal-status status-' + w.status + '">' + w.status + '</span></div>';
+    }).join('');
+  }); } catch (e) { alert('Error: ' + e.message); }
+}
+
+/* ================================================================
+   UPGRADER — CIRCULAR RING
+   ================================================================ */
+var RING_R = 72, RING_CX = 90, RING_CY = 90, RING_STROKE = 12;
+
+/** Returns CSS color string for a USDT value based on MoneyColors thresholds */
+function getMoneyColorCss(val) {
+  var v = parseFloat(val);
+  if (v >= 100) return 'var(--gold)';
+  if (v >= 50) return 'var(--red)';
+  if (v >= 15) return 'var(--pink)';
+  if (v >= 1) return 'var(--purple)';
+  if (v >= 0.1) return 'var(--blue)';
+  return 'var(--grey)';
+}
+
+function drawUpgraderRing(pct, markerAngle) {
+  // pct = win chance (0-100). Ring: top = 0 degrees, clockwise.
+  // Win arc (orange) from 0 to pct%, lose arc (dark) from pct% to 100%.
+  var svg = document.getElementById('up-ring-svg');
+  var circumference = 2 * Math.PI * RING_R;
+  var winLen = circumference * (pct / 100);
+  var loseLen = circumference - winLen;
+  // SVG arcs start at 3 o'clock; rotate -90 to start at top
+  var html = '';
+  // Lose track (background)
+  html += '<circle cx="' + RING_CX + '" cy="' + RING_CY + '" r="' + RING_R + '" fill="none" stroke="#1a1a24" stroke-width="' + RING_STROKE + '"/>';
+  // Win arc (orange)
+  html += '<circle cx="' + RING_CX + '" cy="' + RING_CY + '" r="' + RING_R + '" fill="none" stroke="#ff8c00" stroke-width="' + RING_STROKE + '" stroke-dasharray="' + winLen + ' ' + loseLen + '" stroke-dashoffset="0" transform="rotate(-90 ' + RING_CX + ' ' + RING_CY + ')" stroke-linecap="round"/>';
+  // Lose arc (dark)
+  html += '<circle cx="' + RING_CX + '" cy="' + RING_CY + '" r="' + RING_R + '" fill="none" stroke="#222230" stroke-width="' + RING_STROKE + '" stroke-dasharray="' + loseLen + ' ' + winLen + '" stroke-dashoffset="' + (-winLen) + '" transform="rotate(-90 ' + RING_CX + ' ' + RING_CY + ')" stroke-linecap="round"/>';
+  // Marker dot
+  if (markerAngle !== undefined) {
+    var rad = (markerAngle - 90) * Math.PI / 180;
+    var mx = RING_CX + RING_R * Math.cos(rad);
+    var my = RING_CY + RING_R * Math.sin(rad);
+    html += '<circle cx="' + mx + '" cy="' + my + '" r="8" fill="#fff" filter="url(#glow)"/>';
+    html += '<defs><filter id="glow"><feGaussianBlur stdDeviation="3" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+  }
+  svg.innerHTML = html;
+}
+
+async function loadUpgraderSettings() {
+  document.getElementById('upgrader-init').classList.remove('hidden');
+  document.getElementById('upgrader-play').classList.add('hidden');
+  clearAlert('upgrader-init-alert');
+  try {
+    var s = await api('GET', '/games/upgrader');
+    state.upgraderSettings = s;
+    var sel = document.getElementById('upgrader-percent');
+    var sorted = Object.entries(s.percents).sort(function(a, b) { return Number(b[0]) - Number(a[0]); });
+    sel.innerHTML = sorted.map(function(e) { return '<option value="' + e[0] + '">' + e[0] + '% \u2192 x' + e[1] + '</option>'; }).join('');
+    updateUpgraderPreview();
+    sel.onchange = updateUpgraderPreview;
+    document.getElementById('upgrader-bet').oninput = updateUpgraderPreview;
+  } catch (_) {}
+}
+
+function updateUpgraderPreview() {
+  var s = state.upgraderSettings; if (!s) return;
+  var pct = document.getElementById('upgrader-percent').value;
+  var bet = parseFloat(document.getElementById('upgrader-bet').value) || 0;
+  var mult = parseFloat(s.percents[pct]) || 0;
+  document.getElementById('upgrader-multiplier').textContent = 'x' + mult;
+  document.getElementById('upgrader-possible').textContent = (bet * mult).toFixed(2) + ' USDT';
+}
+
+async function doUpgraderInit() {
+  clearAlert('upgrader-init-alert');
+  var bet = parseFloat(document.getElementById('upgrader-bet').value);
+  var pct = parseInt(document.getElementById('upgrader-percent').value);
+  if (!bet || bet < 1) return showAlert('upgrader-init-alert', 'Minimum bet is 1 USDT');
+  var mult = parseFloat(state.upgraderSettings.percents[pct]) || 0;
+  try {
+    await withFeedback('btn-up-init', async function() {
+      var data = await api('POST', '/games/upgrader/init', { bet: bet, successPercent: pct });
+      state._upBet = bet; state._upWin = bet * mult; state._upPct = pct;
+      document.getElementById('upgrader-init').classList.add('hidden');
+      document.getElementById('upgrader-play').classList.remove('hidden');
+      document.getElementById('upgrader-result').classList.add('hidden');
+      document.getElementById('up-pre-buttons').classList.remove('hidden');
+      document.getElementById('up-post-buttons').classList.add('hidden');
+      document.getElementById('btn-up-run').disabled = false;
+      document.getElementById('up-play-percent').textContent = pct;
+      document.getElementById('up-server-hash').textContent = data.serverHash;
+      document.getElementById('up-server-seed').textContent = '\u2014';
+      document.getElementById('up-client-seed').value = generateClientSeed();
+      var betEl = document.getElementById('up-bet-display');
+      var winEl = document.getElementById('up-win-display');
+      betEl.textContent = bet.toFixed(2);
+      betEl.style.color = getMoneyColorCss(bet);
+      var winAmt = bet * mult;
+      winEl.textContent = winAmt.toFixed(2);
+      winEl.style.color = getMoneyColorCss(winAmt);
+      drawUpgraderRing(pct);
+      // collapse PF
+      document.getElementById('up-pf').classList.remove('open');
+      document.getElementById('up-pf').previousElementSibling.classList.remove('open');
+    });
+  } catch (e) { showAlert('upgrader-init-alert', e.message); }
+}
+
+async function doUpgraderRun() {
+  document.getElementById('btn-up-run').disabled = true;
+  var clientSeed = document.getElementById('up-client-seed').value.trim();
+  if (clientSeed.length !== 64 || !/^[0-9a-fA-F]+$/.test(clientSeed)) {
+    showAlert('upgrader-init-alert', 'Client seed must be exactly 64 hex characters');
+    document.getElementById('btn-up-run').disabled = false;
+    return;
+  }
+  try {
+    var data = await api('POST', '/games/upgrader/run', { clientSeed: clientSeed });
+    var finalAngle = (data.percent / 100) * 360;
+    animateUpgraderRing(state._upPct, finalAngle, function() {
+      var result = document.getElementById('upgrader-result');
+      result.classList.remove('hidden');
+      if (data.won) { result.className = 'upgrader-result won'; result.textContent = 'YOU WIN!'; }
+      else { result.className = 'upgrader-result lost'; result.textContent = 'No luck...'; }
+      document.getElementById('up-server-seed').textContent = data.serverSeed;
+      document.getElementById('up-pre-buttons').classList.add('hidden');
+      document.getElementById('up-post-buttons').classList.remove('hidden');
+      loadWallet();
+    });
+  } catch (e) { alert('Error: ' + e.message); document.getElementById('btn-up-run').disabled = false; }
+}
+
+function animateUpgraderRing(winPct, finalAngle, onDone) {
+  var loops = 5;
+  var totalAngle = loops * 360 + finalAngle;
+  var duration = 3500;
+  var start = performance.now();
+  function frame(now) {
+    var t = Math.min((now - start) / duration, 1);
+    var eased = 1 - Math.pow(1 - t, 3.5);
+    var angle = eased * totalAngle;
+    drawUpgraderRing(winPct, angle % 360);
+    if (t < 1) requestAnimationFrame(frame);
+    else onDone();
+  }
+  requestAnimationFrame(frame);
+}
+
+async function doUpgraderCancel() {
+  try { await api('DELETE', '/games/upgrader'); } catch (_) {}
+  loadUpgraderSettings();
+}
+function doUpgraderPlayAgain() { loadUpgraderSettings(); }
+
+/* ================================================================
+   CASES
+   ================================================================ */
+var MONEY_COLORS = [
+  { value: 0,   cls: 'grey',   label: 'Grey' },
+  { value: 0.1, cls: 'blue',   label: 'Blue' },
+  { value: 1,   cls: 'purple', label: 'Purple' },
+  { value: 15,  cls: 'pink',   label: 'Pink' },
+  { value: 50,  cls: 'red',    label: 'Red' },
+  { value: 100, cls: 'gold',   label: 'Gold' },
+];
+
+function getColorInfo(val) {
+  var v = parseFloat(val);
+  for (var i = 0; i < MONEY_COLORS.length; i++) {
+    if (Math.abs(MONEY_COLORS[i].value - v) < 0.01) return MONEY_COLORS[i];
+  }
+  return MONEY_COLORS[0];
+}
+
+async function loadCasesSettings() {
+  document.getElementById('cases-init').classList.remove('hidden');
+  document.getElementById('cases-play').classList.add('hidden');
+  clearAlert('cases-init-alert');
+  state.selectedCase = null;
+  try {
+    var settings = await api('GET', '/games/cases');
+    state.casesSettings = settings;
+    var list = document.getElementById('cases-list');
+    list.innerHTML = settings.cases.map(function(c) {
+      var sorted = Object.entries(c.data)
+        .map(function(e) { return { val: parseFloat(e[0]), count: e[1], color: getColorInfo(e[0]) }; })
+        .sort(function(a, b) { return a.val - b.val; });
+      var chips = sorted.map(function(d) {
+        return '<div class="case-drop-chip"><span class="case-drop-dot dot-' + d.color.cls + '"></span><span class="clabel-' + d.color.cls + '">' + d.color.label + '</span>&nbsp;&times;&nbsp;' + d.count + '</div>';
+      }).join('');
+      return '<div class="case-card" data-case="' + esc(c.name) + '" onclick="selectCase(\'' + esc(c.name) + '\')">' +
+        '<div><div class="case-name">' + esc(c.name) + '</div><div class="case-cost">' + parseFloat(c.cost).toFixed(1) + ' USDT</div></div>' +
+        '<div class="case-drops">' + chips + '</div></div>';
+    }).join('');
+    document.getElementById('btn-case-open').disabled = true;
+    document.getElementById('btn-case-open').textContent = 'Select a case';
+  } catch (_) {}
+}
+
+function selectCase(name) {
+  state.selectedCase = name;
+  document.querySelectorAll('.case-card').forEach(function(c) { c.classList.toggle('selected', c.dataset.case === name); });
+  var btn = document.getElementById('btn-case-open');
+  btn.disabled = false; btn.textContent = 'Open ' + name;
+}
+
+async function doCaseInit() {
+  clearAlert('cases-init-alert');
+  if (!state.selectedCase) return;
+  try {
+    var data = await api('POST', '/games/cases/init', { caseName: state.selectedCase });
+    document.getElementById('cases-init').classList.add('hidden');
+    document.getElementById('cases-play').classList.remove('hidden');
+    document.getElementById('case-result').classList.add('hidden');
+    document.getElementById('case-pre-buttons').classList.remove('hidden');
+    document.getElementById('case-post-buttons').classList.add('hidden');
+    document.getElementById('btn-case-run').disabled = false;
+    document.getElementById('case-play-name').textContent = state.selectedCase;
+    document.getElementById('case-server-hash').textContent = data.serverHash;
+    document.getElementById('case-server-seed').textContent = '\u2014';
+    document.getElementById('case-client-seed').value = generateClientSeed();
+    buildRouletteStrip();
+    document.getElementById('case-pf').classList.remove('open');
+    document.getElementById('case-pf').previousElementSibling.classList.remove('open');
+  } catch (e) { showAlert('cases-init-alert', e.message); }
+}
+
+function buildRouletteStrip() {
+  var caseData = state.casesSettings.cases.find(function(c) { return c.name === state.selectedCase; });
+  if (!caseData) return;
+  var deck = [];
+  var sorted = Object.entries(caseData.data)
+    .map(function(e) { return { val: parseFloat(e[0]), count: e[1] }; })
+    .sort(function(a, b) { return a.val - b.val; });
+  for (var s = 0; s < sorted.length; s++) {
+    for (var j = 0; j < sorted[s].count; j++) deck.push(sorted[s].val);
+  }
+  var items = [];
+  while (items.length < 80) {
+    var copy = deck.slice();
+    shuffleArray(copy);
+    items = items.concat(copy);
+  }
+  items.length = 80;
+  state._rouletteItems = items;
+  var strip = document.getElementById('roulette-strip');
+  strip.innerHTML = items.map(function(val) {
+    var c = getColorInfo(val);
+    return '<div class="roulette-item bg-' + c.cls + ' color-' + c.cls + '">' + c.label + '</div>';
+  }).join('');
+  strip.style.transition = 'none';
+  strip.style.transform = 'translateX(0)';
+}
+
+async function doCaseRun() {
+  document.getElementById('btn-case-run').disabled = true;
+  var clientSeed = document.getElementById('case-client-seed').value.trim();
+  if (clientSeed.length !== 64 || !/^[0-9a-fA-F]+$/.test(clientSeed)) {
+    showAlert('cases-init-alert', 'Client seed must be exactly 64 hex characters');
+    document.getElementById('btn-case-run').disabled = false;
+    return;
+  }
+  try {
+    var data = await api('POST', '/games/cases/run', { clientSeed: clientSeed });
+    var winVal = parseFloat(data.result);
+    var winColor = getColorInfo(winVal);
+    var items = state._rouletteItems;
+    // Place winning item at target (position 28, ~halfway through visible strip)
+    var targetPos = 28;
+    items[targetPos] = winVal;
+    var strip = document.getElementById('roulette-strip');
+    var el = strip.children[targetPos];
+    el.className = 'roulette-item bg-' + winColor.cls + ' color-' + winColor.cls;
+    el.textContent = winColor.label;
+    var containerW = document.getElementById('roulette-container').offsetWidth;
+    var itemW = 80;
+    var scrollTo = (targetPos * itemW) + (itemW / 2) - (containerW / 2);
+    var offset = (Math.random() - 0.5) * (itemW * 0.3);
+    strip.style.transition = 'none';
+    strip.style.transform = 'translateX(0)';
+    strip.offsetHeight;
+    // Longer, smoother animation
+    strip.style.transition = 'transform 5.5s cubic-bezier(0.12, 0.8, 0.2, 1)';
+    strip.style.transform = 'translateX(-' + (scrollTo + offset) + 'px)';
+    setTimeout(function() {
+      var result = document.getElementById('case-result');
+      result.classList.remove('hidden');
+      result.innerHTML = '<div class="case-result-value color-' + winColor.cls + '">' + winColor.label + '</div><div class="text-muted mt-8">' + winVal.toFixed(2) + ' USDT</div>';
+      document.getElementById('case-server-seed').textContent = data.serverSeed;
+      document.getElementById('case-pre-buttons').classList.add('hidden');
+      document.getElementById('case-post-buttons').classList.remove('hidden');
+      loadWallet();
+    }, 5800);
+  } catch (e) { alert('Error: ' + e.message); document.getElementById('btn-case-run').disabled = false; }
+}
+
+async function doCaseCancel() {
+  try { await api('DELETE', '/games/cases'); } catch (_) {}
+  loadCasesSettings();
+}
+
+// Re-open the same case
+async function doCaseOpenSameAgain() {
+  if (!state.selectedCase) return;
+  try {
+    var data = await api('POST', '/games/cases/init', { caseName: state.selectedCase });
+    document.getElementById('case-result').classList.add('hidden');
+    document.getElementById('case-pre-buttons').classList.remove('hidden');
+    document.getElementById('case-post-buttons').classList.add('hidden');
+    document.getElementById('btn-case-run').disabled = false;
+    document.getElementById('case-server-hash').textContent = data.serverHash;
+    document.getElementById('case-server-seed').textContent = '\u2014';
+    document.getElementById('case-client-seed').value = generateClientSeed();
+    buildRouletteStrip();
+    document.getElementById('case-pf').classList.remove('open');
+    document.getElementById('case-pf').previousElementSibling.classList.remove('open');
+  } catch (e) { showAlert('cases-init-alert', e.message); loadCasesSettings(); }
+}
+
+/* ================================================================
+   UTILITIES
+   ================================================================ */
+function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function truncAddr(a) { return (!a || a.length < 14) ? a : a.slice(0,8) + '\u2026' + a.slice(-6); }
+function copyText(t) { navigator.clipboard.writeText(t); }
+function shuffleArray(arr) { for (var i = arr.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp; } }
+
+/* INIT */
+renderNav();
+if (state.token) loadWallet();
+navigate(state.token ? 'home' : 'auth');
+</script>
+</body>
+</html>
